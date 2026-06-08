@@ -1,0 +1,37 @@
+run_id,run_number,commit_sha,commit_message,status,workflow_duration,job_name,job_status,job_duration,test_count,test_failures,test_duration,timestamp,steps_detail
+27112044624,1,e1a3df26,feat: setup inicial do projeto calculadora com pipeline CI sequencial,success,42,Lint (flake8),success,14,0,0,0,2026-06-08T02:06:56Z,{}
+27112044624,1,e1a3df26,feat: setup inicial do projeto calculadora com pipeline CI sequencial,success,42,Testes Automatizados,success,18,25,0,0.8,2026-06-08T02:06:56Z,{}
+27112044624,1,e1a3df26,feat: setup inicial do projeto calculadora com pipeline CI sequencial,success,42,Gerar Artefato,success,5,0,0,0,2026-06-08T02:06:56Z,{}
+27112149648,2,ea54e934,ci: habilita cache de dependências pip para otimização,success,38,Lint (flake8),success,13,0,0,0,2026-06-08T02:10:40Z,{}
+27112149648,2,ea54e934,ci: habilita cache de dependências pip para otimização,success,38,Testes Automatizados,success,16,25,0,0.8,2026-06-08T02:10:40Z,{}
+27112149648,2,ea54e934,ci: habilita cache de dependências pip para otimização,success,38,Gerar Artefato,success,4,0,0,0,2026-06-08T02:10:40Z,{}
+27112269110,3,8f9661d7,test(ci): simula falha adicionando teste com valor incorreto,failure,28,Lint (flake8),success,12,0,0,0,2026-06-08T02:14:59Z,{}
+27112269110,3,8f9661d7,test(ci): simula falha adicionando teste com valor incorreto,failure,28,Testes Automatizados,failure,12,26,1,0.5,2026-06-08T02:14:59Z,{}
+27112356025,4,55bca9ac,"fix(tests): corrige teste com falha, retorna pipeline ao verde",success,37,Lint (flake8),success,12,0,0,0,2026-06-08T02:18:15Z,{}
+27112356025,4,55bca9ac,"fix(tests): corrige teste com falha, retorna pipeline ao verde",success,37,Testes Automatizados,success,15,25,0,0.7,2026-06-08T02:18:15Z,{}
+27112356025,4,55bca9ac,"fix(tests): corrige teste com falha, retorna pipeline ao verde",success,37,Gerar Artefato,success,5,0,0,0,2026-06-08T02:18:15Z,{}
+27112391499,5,3b0d022d,test: aumenta volume de testes com parametrize para análise de escala,success,40,Lint (flake8),success,12,0,0,0,2026-06-08T02:19:41Z,{}
+27112391499,5,3b0d022d,test: aumenta volume de testes com parametrize para análise de escala,success,40,Testes Automatizados,success,17,73,0,1.4,2026-06-08T02:19:41Z,{}
+27112391499,5,3b0d022d,test: aumenta volume de testes com parametrize para análise de escala,success,40,Gerar Artefato,success,6,0,0,0,2026-06-08T02:19:41Z,{}
+27112473461,6,8249ae61,test: introduz testes lentos para identificar gargalo no pipeline,success,63,Lint (flake8),success,12,0,0,0,2026-06-08T02:22:44Z,{}
+27112473461,6,8249ae61,test: introduz testes lentos para identificar gargalo no pipeline,success,63,Testes Automatizados,success,37,73,0,17.4,2026-06-08T02:22:44Z,{}
+27112473461,6,8249ae61,test: introduz testes lentos para identificar gargalo no pipeline,success,63,Gerar Artefato,success,9,0,0,0,2026-06-08T02:22:44Z,{}
+27112524803,7,f0fe387b,perf(tests): remove testes lentos após análise de gargalo,success,41,Lint (flake8),success,11,0,0,0,2026-06-08T02:26:37Z,{}
+27112524803,7,f0fe387b,perf(tests): remove testes lentos após análise de gargalo,success,41,Testes Automatizados,success,17,73,0,1.3,2026-06-08T02:26:37Z,{}
+27112524803,7,f0fe387b,perf(tests): remove testes lentos após análise de gargalo,success,41,Gerar Artefato,success,8,0,0,0,2026-06-08T02:26:37Z,{}
+27112577156,8,e118b08d,ci: remove dependência entre jobs para execução paralela,success,31,Lint (flake8),success,10,0,0,0,2026-06-08T02:27:54Z,{}
+27112577156,8,e118b08d,ci: remove dependência entre jobs para execução paralela,success,31,Testes Automatizados,success,15,73,0,1.2,2026-06-08T02:27:54Z,{}
+27112577156,8,e118b08d,ci: remove dependência entre jobs para execução paralela,success,31,Gerar Artefato,success,12,0,0,0,2026-06-08T02:27:54Z,{}
+27112629509,9,fb8be2fc,ci: reverte para jobs sequenciais para comparação de desempenho,success,44,Lint (flake8),success,12,0,0,0,2026-06-08T02:28:49Z,{}
+27112629509,9,fb8be2fc,ci: reverte para jobs sequenciais para comparação de desempenho,success,44,Testes Automatizados,success,19,73,0,1.3,2026-06-08T02:28:49Z,{}
+27112629509,9,fb8be2fc,ci: reverte para jobs sequenciais para comparação de desempenho,success,44,Gerar Artefato,success,8,0,0,0,2026-06-08T02:28:49Z,{}
+27112682110,10,d1cebf2e,ci: adiciona matrix strategy para testar em Python 3.10 e 3.11,success,46,Lint (flake8),success,11,0,0,0,2026-06-08T02:30:29Z,{}
+27112682110,10,d1cebf2e,ci: adiciona matrix strategy para testar em Python 3.10 e 3.11,success,46,Testes (Python 3.10),success,16,73,0,1.4,2026-06-08T02:30:29Z,{}
+27112682110,10,d1cebf2e,ci: adiciona matrix strategy para testar em Python 3.10 e 3.11,success,46,Testes (Python 3.11),success,18,73,0,1.3,2026-06-08T02:30:29Z,{}
+27112682110,10,d1cebf2e,ci: adiciona matrix strategy para testar em Python 3.10 e 3.11,success,46,Gerar Artefato,success,12,0,0,0,2026-06-08T02:30:29Z,{}
+27112791306,11,88d3de7a,"feat: adiciona operações avançadas (power, sqrt, modulo) com testes",success,50,Lint (flake8),success,12,0,0,0,2026-06-08T02:34:16Z,{}
+27112791306,11,88d3de7a,"feat: adiciona operações avançadas (power, sqrt, modulo) com testes",success,50,Testes Automatizados,success,22,85,0,1.8,2026-06-08T02:34:16Z,{}
+27112791306,11,88d3de7a,"feat: adiciona operações avançadas (power, sqrt, modulo) com testes",success,50,Gerar Artefato,success,11,0,0,0,2026-06-08T02:34:16Z,{}
+27112842731,12,0bbcf745,ci: pipeline final otimizado com cache e jobs paralelos,success,31,Lint (flake8),success,10,0,0,0,2026-06-08T02:36:15Z,{}
+27112842731,12,0bbcf745,ci: pipeline final otimizado com cache e jobs paralelos,success,31,Testes Automatizados,success,13,85,0,1.6,2026-06-08T02:36:15Z,{}
+27112842731,12,0bbcf745,ci: pipeline final otimizado com cache e jobs paralelos,success,31,Gerar Artefato,success,14,0,0,0,2026-06-08T02:36:15Z,{}

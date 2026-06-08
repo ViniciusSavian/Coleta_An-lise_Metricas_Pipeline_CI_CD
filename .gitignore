@@ -30,7 +30,6 @@ test_metrics.json
 *.swp
 *.swo
 
-# Entregáveis gerados (CSV, JSON, gráficos — exceto o relatório)
-Entregaveis/metrics.csv
-Entregaveis/metrics.json
-Entregaveis/graficos/
+# Arquivos gerados pelo CI na raiz (não versionados)
+/metrics.csv
+/metrics.json
