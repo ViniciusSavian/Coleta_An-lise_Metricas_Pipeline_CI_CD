@@ -1,5 +1,4 @@
 """Testes automatizados da calculadora."""
-import time
 import pytest
 from calculator.calculator import Calculator
 
@@ -100,23 +99,6 @@ class TestDivide:
 
     def test_divide_por_si_mesmo(self, calc):
         assert calc.divide(7, 7) == 1.0
-
-
-# ── Teste lento — simula gargalo de I/O ou integração externa ─────────────────
-
-
-class TestSlowOperation:
-    """Simula operação lenta para identificar gargalo no pipeline."""
-
-    def test_operacao_lenta_simulando_io(self, calc):
-        """Simula latência de I/O externo (ex: banco de dados, API)."""
-        time.sleep(8)
-        assert calc.add(1, 1) == 2
-
-    def test_operacao_lenta_simulando_processamento(self, calc):
-        """Simula processamento pesado."""
-        time.sleep(7)
-        assert calc.multiply(2, 3) == 6
 
 
 # ── Testes parametrizados para aumentar volume ────────────────────────────────
