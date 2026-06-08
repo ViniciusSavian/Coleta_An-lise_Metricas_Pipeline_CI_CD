@@ -81,6 +81,10 @@ class TestMultiply:
 class TestDivide:
     """Testes da operação de divisão."""
 
+    def test_divide_resultado_errado_simulacao_falha(self, calc):
+        """TESTE PROPOSITAL COM FALHA — simula erro de regressão."""
+        assert calc.divide(10, 2) == 999  # valor errado intencional
+
     def test_divide_basico(self, calc):
         assert calc.divide(10, 2) == 5.0
 
