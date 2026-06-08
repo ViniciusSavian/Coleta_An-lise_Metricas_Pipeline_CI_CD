@@ -34,7 +34,7 @@ jobs:
   test:
     name: "Testes Automatizados"
     runs-on: ubuntu-latest
-    # Execução paralela: lint e test rodam ao mesmo tempo
+    needs: lint
 
     steps:
       - name: Checkout do código
