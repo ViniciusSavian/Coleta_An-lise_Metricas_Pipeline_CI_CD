@@ -99,3 +99,43 @@ class TestDivide:
 
     def test_divide_por_si_mesmo(self, calc):
         assert calc.divide(7, 7) == 1.0
+
+
+# ── Testes parametrizados para aumentar volume ────────────────────────────────
+
+
+@pytest.mark.parametrize("a,b,expected", [
+    (0, 0, 0), (1, 1, 2), (2, 3, 5), (10, 20, 30),
+    (100, 200, 300), (-1, 1, 0), (-5, -5, -10),
+    (0.5, 0.5, 1.0), (1000, 2000, 3000), (7, 3, 10),
+    (15, 15, 30), (99, 1, 100), (50, 50, 100), (3, 7, 10),
+])
+def test_add_parametrizado(calc, a, b, expected):
+    assert calc.add(a, b) == expected
+
+
+@pytest.mark.parametrize("a,b,expected", [
+    (5, 3, 2), (10, 4, 6), (0, 0, 0), (100, 1, 99),
+    (-1, -1, 0), (7, 7, 0), (1000, 999, 1), (3, 5, -2),
+    (20, 10, 10), (0, 5, -5), (8, 4, 4), (15, 7, 8),
+])
+def test_subtract_parametrizado(calc, a, b, expected):
+    assert calc.subtract(a, b) == expected
+
+
+@pytest.mark.parametrize("a,b,expected", [
+    (2, 3, 6), (0, 5, 0), (5, 0, 0), (-2, -3, 6),
+    (10, 10, 100), (1, 1, 1), (-1, 1, -1), (7, 7, 49),
+    (3, 4, 12), (6, 6, 36), (2, 10, 20), (5, 5, 25),
+])
+def test_multiply_parametrizado(calc, a, b, expected):
+    assert calc.multiply(a, b) == expected
+
+
+@pytest.mark.parametrize("a,b,expected", [
+    (10, 2, 5.0), (9, 3, 3.0), (100, 4, 25.0), (7, 7, 1.0),
+    (1, 2, 0.5), (3, 6, 0.5), (20, 4, 5.0), (81, 9, 9.0),
+    (50, 10, 5.0), (16, 4, 4.0),
+])
+def test_divide_parametrizado(calc, a, b, expected):
+    assert calc.divide(a, b) == expected
