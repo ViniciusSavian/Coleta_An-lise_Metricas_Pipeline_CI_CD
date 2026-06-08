@@ -139,3 +139,59 @@ def test_multiply_parametrizado(calc, a, b, expected):
 ])
 def test_divide_parametrizado(calc, a, b, expected):
     assert calc.divide(a, b) == expected
+
+
+# ── Operações avançadas ───────────────────────────────────────────────────────
+
+
+class TestPower:
+    """Testes da operação de potência."""
+
+    def test_power_basico(self, calc):
+        assert calc.power(2, 3) == 8
+
+    def test_power_expoente_zero(self, calc):
+        assert calc.power(5, 0) == 1
+
+    def test_power_expoente_um(self, calc):
+        assert calc.power(7, 1) == 7
+
+    def test_power_base_negativa(self, calc):
+        assert calc.power(-2, 3) == -8
+
+    def test_power_fracionado(self, calc):
+        assert calc.power(4, 0.5) == 2.0
+
+
+class TestSqrt:
+    """Testes da raiz quadrada."""
+
+    def test_sqrt_perfeito(self, calc):
+        assert calc.sqrt(9) == 3.0
+
+    def test_sqrt_zero(self, calc):
+        assert calc.sqrt(0) == 0.0
+
+    def test_sqrt_dois(self, calc):
+        assert abs(calc.sqrt(2) - 1.41421356) < 1e-6
+
+    def test_sqrt_negativo_levanta_excecao(self, calc):
+        with pytest.raises(ValueError, match="negativo"):
+            calc.sqrt(-1)
+
+
+class TestModulo:
+    """Testes da operação de módulo."""
+
+    def test_modulo_basico(self, calc):
+        assert calc.modulo(10, 3) == 1
+
+    def test_modulo_divisivel(self, calc):
+        assert calc.modulo(9, 3) == 0
+
+    def test_modulo_por_zero_levanta_excecao(self, calc):
+        with pytest.raises(ValueError, match="zero"):
+            calc.modulo(5, 0)
+
+    def test_modulo_negativo(self, calc):
+        assert calc.modulo(-7, 3) == 2
