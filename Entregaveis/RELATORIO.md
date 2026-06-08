@@ -3,6 +3,7 @@
 **Disciplina:** Programação
 **Projeto:** Calculadora Python com Pipeline GitHub Actions  
 **Repositório:** https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD  
+**Pipeline YAML:** https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/blob/main/.github/workflows/ci.yml  
 **Data das execuções:** 2026-06-07  
 **Total de execuções:** 12 runs (GitHub Actions)
 
@@ -134,19 +135,65 @@ Comparando Run 9 (sequencial, 73 testes) e Run 8 (paralelo, 73 testes):
 
 O aumento de 25 para 85 testes (+240%) elevou o tempo do job de testes em apenas ~4s (+27%), demonstrando boa escalabilidade do pytest com a suite atual.
 
-### 4.5 O que causou a falha no Run 3?
+### 4.5 Quais falhas foram mais frequentes?
 
-A falha foi **intencional e controlada**: adicionou-se o teste `test_add_falha_intencional` que afirmava `calc.add(2, 3) == 99`. O pipeline falhou no job `test`, e o job `build-artifact` foi automaticamente ignorado (skipped) porque depende do sucesso do `test`. O Run 3 teve duração total de apenas 28s — o mais curto entre os sequenciais — porque a execução foi interrompida cedo.
+Das 12 execuções, houve **apenas 1 falha** (Run 3, 8,3%). A falha foi **intencional e controlada**: adicionou-se o teste `test_add_falha_intencional` que afirmava `calc.add(2, 3) == 99`. O pipeline falhou no job `test`, e o job `build-artifact` foi automaticamente ignorado (skipped) porque depende do sucesso do `test`. Não houve falhas de infraestrutura, timeout ou erro de configuração ao longo de todo o experimento — indicativo de que o pipeline está bem configurado e as dependências são estáveis.
 
-### 4.6 Qual o impacto da matrix strategy?
+Tipo de falha por categoria no experimento:
 
-O Run 10 executou os testes simultaneamente em Python 3.10 e 3.11. A duração total foi 46s — comparável ao Run 9 sequencial (44s) —, mas o pipeline **garantiu compatibilidade em duas versões ao mesmo tempo sem aumentar o tempo de espera**. A matrix add um job extra sem custo de latência adicional por execução em paralelo.
+| Tipo de falha | Ocorrências | Run(s) |
+|---|---|---|
+| Teste com asserção incorreta (intencional) | 1 | Run 3 |
+| Falha de infraestrutura (runner, rede) | 0 | — |
+| Falha de lint/estilo | 0 | — |
+| Timeout | 0 | — |
 
-### 4.7 Qual a taxa de sucesso e o que ela indica?
+### 4.6 O pipeline fornece feedback rápido o suficiente para o desenvolvedor?
 
-91,7% (11/12 runs). A única falha foi proposital (experimento controlado). Em um cenário real de produção, essa taxa indicaria que a suíte de testes está cobrindo adequadamente o código e que o lint está prevenindo problemas de qualidade antes do merge. O tempo de recuperação (Run 4 corrigindo o Run 3) foi de aproximadamente 3 minutos — tempo de ciclo muito adequado para equipes ágeis.
+Sim. O tempo de ciclo (commit → resultado visível no GitHub) variou entre **28s e 63s** ao longo das 12 execuções, com mediana de ~41s. Para a configuração final otimizada (Run 12), o resultado aparece em **31 segundos**.
 
-### 4.8 Que hipóteses foram confirmadas ou refutadas?
+| Referência de mercado | Tempo típico |
+|---|---|
+| Feedback considerado "rápido" (DevOps Research) | < 10 min |
+| Meta de equipes de alto desempenho | < 5 min |
+| Este pipeline (mediana) | **~41s** |
+
+O pipeline está muito abaixo dos benchmarks de mercado. Um desenvolvedor pode fazer um commit, abrir o GitHub e já ter o resultado antes de volcar ao editor. O único risco de lentidão seria em suítes de testes muito maiores (> 1.000 testes) ou com dependências pesadas — situações que exigiriam cache de camadas adicionais ou separação de testes em jobs paralelos por módulo.
+
+### 4.7 Que melhorias poderiam ser feitas no pipeline?
+
+Com base nos dados coletados, as melhorias mais impactantes seriam:
+
+**Melhorias de desempenho:**
+- Separar testes por módulo em jobs paralelos quando a suíte ultrapassar ~500 testes (o job de teste é o gargalo)
+- Adicionar cache da camada de SO além do pip (ex.: caching do `apt-get install` se dependências nativas forem adicionadas)
+- Usar `pytest-xdist` para paralelismo interno aos testes
+
+**Melhorias de observabilidade:**
+- Publicar cobertura como comentário automático no Pull Request
+- Adicionar badge de status e cobertura no README
+- Exportar métricas de duração por job para um dashboard externo (ex.: Grafana via API)
+
+**Melhorias de segurança e qualidade:**
+- Adicionar job de análise de vulnerabilidades em dependências (`pip-audit` ou `safety`)
+- Configurar `dependabot` para atualizar dependências automaticamente
+- Adicionar proteção de branch exigindo pipeline verde antes do merge
+
+**Melhoria operacional:**
+- Limitar armazenamento de artefatos a 7 dias (economiza GB de storage)
+- Adicionar `concurrency` group para cancelar runs antigas ao fazer push rápido
+
+### 4.8 Como essa análise poderia apoiar decisões de engenharia?
+
+Os dados coletados permitem decisões baseadas em evidências em vez de intuição:
+
+- **Priorização de otimização:** O gráfico 2 mostra que o job de testes é o gargalo. Antes da análise, a intuição poderia apontar para a instalação de dependências como problema. Os dados refutam isso.
+- **Justificativa de investimento:** A redução de 30% com paralelismo é um número concreto para justificar a refatoração do pipeline para o time ou gestor.
+- **Detecção de regressão de desempenho:** Com uma baseline estabelecida (31–44s para 85 testes), qualquer run que ultrapasse 60s sem justificativa aciona um alerta de investigação.
+- **Planejamento de escala:** A relação linear suave entre volume de testes e duração (Gráfico 4) permite projetar quando o pipeline precisará de refatoração — por exemplo, ao atingir 500 testes o job de teste levaria ~10–12s, ainda dentro da meta de feedback rápido.
+- **Documentação de SLA de CI:** O time pode comprometer-se formalmente com um SLA de "pipeline verde em menos de 2 minutos" com base nesses dados.
+
+### 4.9 Comparação entre hipóteses iniciais e resultados observados
 
 | Hipótese | Verificada? | Observação |
 |---|---|---|
@@ -156,6 +203,26 @@ O Run 10 executou os testes simultaneamente em Python 3.10 e 3.11. A duração t
 | Testes com sleep impactam duração | ✅ Confirmada | +50% na duração total (Run 5→6: 40s→63s) |
 | Matrix strategy aumenta tempo do pipeline | ✅ Refutada | Run 10 (matrix) ≈ Run 9 (sequencial) em tempo total |
 | Falha no test impede build-artifact | ✅ Confirmada | Run 3: build-artifact foi skipped automaticamente |
+
+### 4.10 Análise de Resultados Inesperados
+
+Dois resultados se destacaram por contradizer as expectativas iniciais:
+
+**Resultado inesperado 1 — Matrix strategy não aumentou o tempo total**
+
+Hipótese inicial: adicionar um segundo ambiente Python via `matrix` dobraria o tempo do pipeline, pois haveria o dobro de jobs de teste.
+
+Resultado observado: Run 10 (matrix: 3.10 + 3.11) durou **46s**, praticamente igual ao Run 9 sequencial (**44s**) com um único ambiente.
+
+Explicação: Os dois jobs de teste rodam em paralelo. O tempo total é determinado pelo mais lento dos dois (33s para Python 3.11), não pela soma. Isso significa que a matrix strategy entrega cobertura de compatibilidade com custo quase zero — um padrão que deveria ser adotado por padrão em projetos com suporte a múltiplas versões do Python.
+
+**Resultado inesperado 2 — Triplicar testes aumentou apenas 27% do tempo do job**
+
+Hipótese inicial: passar de 25 para 85 testes (×3,4) elevaria o job de testes proporcionalmente, ou seja, de ~15s para ~50s.
+
+Resultado observado: o job de testes passou de ~15s (Runs 1–4) para ~19s (Runs 11–12) — um aumento de apenas 27%, não de 240%.
+
+Explicação: a maior parte do tempo do job é composta por overhead fixo (checkout do código, setup do Python, instalação de dependências via cache, inicialização do pytest). Os testes em si levam < 2s para executar. Isso revela que o overhead fixo domina o tempo do job na escala atual, e a suíte precisaria crescer para ~5.000 testes antes de o tempo de execução dos testes ser o fator dominante.
 
 ---
 
