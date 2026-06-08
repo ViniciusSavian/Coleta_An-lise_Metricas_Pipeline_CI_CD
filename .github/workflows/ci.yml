@@ -1,0 +1,170 @@
+name: CI Pipeline - Calculadora
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ─── JOB 1: Lint ───────────────────────────────────────────────────────────
+  lint:
+    name: "Lint (flake8)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Executar flake8
+        run: flake8 calculator/ tests/
+
+  # ─── JOB 2: Testes ─────────────────────────────────────────────────────────
+  test:
+    name: "Testes Automatizados"
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Executar testes com cobertura
+        id: run_tests
+        run: |
+          set +e
+          pytest --json-report --json-report-file=.test_results.json \
+                 --cov=calculator --cov-report=xml -v
+          TEST_EXIT=$?
+          set -e
+
+          # Extrair métricas do relatório JSON
+          python3 - << 'PYEOF'
+          import json, os, sys
+
+          try:
+              with open(".test_results.json") as f:
+                  data = json.load(f)
+              summary = data.get("summary", {})
+              total    = summary.get("total",    0)
+              passed   = summary.get("passed",   0)
+              failed   = summary.get("failed",   0)
+              duration = round(data.get("duration", 0), 3)
+          except Exception as exc:
+              print(f"[WARN] Falha ao ler relatório: {exc}", file=sys.stderr)
+              total = passed = failed = duration = 0
+
+          metrics = {
+              "run_id":        os.environ.get("GITHUB_RUN_ID", ""),
+              "run_number":    int(os.environ.get("GITHUB_RUN_NUMBER", 0)),
+              "commit_sha":    os.environ.get("GITHUB_SHA", "")[:8],
+              "test_count":    total,
+              "test_passed":   passed,
+              "test_failures": failed,
+              "test_duration": duration,
+          }
+
+          with open("test_metrics.json", "w") as f:
+              json.dump(metrics, f, indent=2)
+
+          print("── Métricas dos Testes ──────────────────")
+          for k, v in metrics.items():
+              print(f"  {k}: {v}")
+          PYEOF
+
+          exit $TEST_EXIT
+
+      - name: Publicar resumo no GitHub
+        if: always()
+        run: |
+          python3 - << 'PYEOF'
+          import json
+
+          try:
+              with open("test_metrics.json") as f:
+                  m = json.load(f)
+          except Exception:
+              m = {}
+
+          summary_path = "${{ runner.temp }}/step_summary.md"
+          import os
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null")
+
+          with open(summary_path, "a") as f:
+              f.write("## Resultado dos Testes\n\n")
+              f.write(f"| Métrica | Valor |\n")
+              f.write(f"|---------|-------|\n")
+              f.write(f"| Total de testes | {m.get('test_count', 0)} |\n")
+              f.write(f"| Aprovados | {m.get('test_passed', 0)} |\n")
+              f.write(f"| Falhos | {m.get('test_failures', 0)} |\n")
+              f.write(f"| Duração (s) | {m.get('test_duration', 0)} |\n")
+          PYEOF
+
+      - name: Upload — Relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ github.run_number }}
+          path: coverage.xml
+
+      - name: Upload — Métricas dos testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-metrics-${{ github.run_number }}
+          path: test_metrics.json
+
+  # ─── JOB 3: Artefato final ─────────────────────────────────────────────────
+  build-artifact:
+    name: "Gerar Artefato"
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Gerar artefato da aplicação
+        run: |
+          mkdir -p dist
+          cp -r calculator/ dist/
+          cp requirements.txt dist/
+          echo "Build: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > dist/BUILD_INFO.txt
+          echo "Commit: ${{ github.sha }}" >> dist/BUILD_INFO.txt
+          echo "Run: ${{ github.run_number }}" >> dist/BUILD_INFO.txt
+
+      - name: Upload — Artefato da aplicação
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculadora-dist-${{ github.run_number }}
+          path: dist/
