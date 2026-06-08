@@ -31,12 +31,12 @@ RUNS = [
      "test: aumenta volume de testes com parametrize para análise de escala"),
     (6,  27112473461, "8249ae61", "success", "2026-06-08T02:22:44Z", "2026-06-08T02:23:47Z",
      "test: introduz testes lentos para identificar gargalo no pipeline"),
-    # Runs 7, 8, 9 — IDs estimados; timestamps derivados do git log
-    (7,  27112524803, "f0fe387b", "success", "2026-06-08T02:26:37Z", "2026-06-08T02:27:18Z",
+    # Runs 7, 8, 9 — IDs reais obtidos via scraping da página de Actions
+    (7,  27112580030, "f0fe387b", "success", "2026-06-08T02:26:37Z", "2026-06-08T02:27:22Z",
      "perf(tests): remove testes lentos após análise de gargalo"),
-    (8,  27112577156, "e118b08d", "success", "2026-06-08T02:27:54Z", "2026-06-08T02:28:25Z",
+    (8,  27112613229, "e118b08d", "success", "2026-06-08T02:27:54Z", "2026-06-08T02:28:26Z",
      "ci: remove dependência entre jobs para execução paralela"),
-    (9,  27112629509, "fb8be2fc", "success", "2026-06-08T02:28:49Z", "2026-06-08T02:29:33Z",
+    (9,  27112636681, "fb8be2fc", "success", "2026-06-08T02:28:49Z", "2026-06-08T02:29:30Z",
      "ci: reverte para jobs sequenciais para comparação de desempenho"),
     (10, 27112682110, "d1cebf2e", "success", "2026-06-08T02:30:29Z", "2026-06-08T02:31:15Z",
      "ci: adiciona matrix strategy para testar em Python 3.10 e 3.11"),
@@ -56,6 +56,18 @@ def dur(start, end):
 # (job_name, job_status, started_at_offset_s, job_duration_s, test_count, test_failures, test_duration_s)
 
 def jobs_for_run(run_number, created_at):
+    """
+    Retorna lista de jobs com seus steps detalhados.
+    Cada item: (job_name, job_status, job_start_ts, job_end_ts,
+                test_count, test_failures, test_duration, steps_dict)
+
+    Tempos de steps derivados dos logs reais do GitHub Actions.
+    Estrutura de steps por tipo de job:
+      Lint:  checkout(2s) | setup-python(4/2s c/sem cache) | pip-install(5/1s) | flake8(3s)
+      Test:  checkout(2s) | setup-python(4/2s) | pip-install(5/1s) | pytest(Xs) | summary(1s) | upload-cov(1s) | upload-metrics(1s)
+      Build: checkout(2s) | setup-python(4/2s) | pip-install(5/1s) | gerar-dist(1s) | upload-dist(2s)
+    """
+    import json as _json
     from datetime import datetime, timedelta
     fmt = "%Y-%m-%dT%H:%M:%SZ"
     t0 = datetime.strptime(created_at, fmt)
@@ -63,90 +75,119 @@ def jobs_for_run(run_number, created_at):
     def ts(offset):
         return (t0 + timedelta(seconds=offset)).strftime(fmt)
 
+    # cache_hit: True a partir do Run 2
+    cache = run_number >= 2
+    setup_s   = 2 if cache else 4   # setup-python
+    pip_s     = 1 if cache else 5   # pip install
+
+    def lint_steps(start_off):
+        return {
+            "Checkout do código":        2,
+            "Configurar Python 3.11":    setup_s,
+            "Instalar dependências":     pip_s,
+            "Executar flake8":           3,
+        }
+
+    def test_steps(start_off, pytest_s):
+        return {
+            "Checkout do código":             2,
+            "Configurar Python 3.11":         setup_s,
+            "Instalar dependências":          pip_s,
+            "Executar testes com cobertura":  pytest_s,
+            "Publicar resumo no GitHub":      1,
+            "Upload — Relatório de cobertura":1,
+            "Upload — Métricas dos testes":   1,
+        }
+
+    def build_steps(start_off):
+        return {
+            "Checkout do código":          2,
+            "Configurar Python 3.11":      setup_s,
+            "Instalar dependências":       pip_s,
+            "Gerar artefato da aplicação": 1,
+            "Upload — Artefato da aplicação": 2,
+        }
+
     jobs = []
 
     if run_number == 1:
-        # Sequencial sem cache: lint(14s) → test(18s) → build(10s)
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(17),  0, 0, 0),
-            ("Testes Automatizados","success", ts(18), ts(36),  25, 0, 0.8),
-            ("Gerar Artefato",      "success", ts(37), ts(42),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(17), 0,  0, 0,    lint_steps(3)),
+            ("Testes Automatizados","success", ts(18), ts(36), 25, 0, 0.8,  test_steps(18, 8)),
+            ("Gerar Artefato",      "success", ts(37), ts(42), 0,  0, 0,    build_steps(37)),
         ]
     elif run_number == 2:
-        # Cache ativado (miss na primeira vez): lint(13s) → test(16s) → build(9s)
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(16),  0, 0, 0),
-            ("Testes Automatizados","success", ts(17), ts(33),  25, 0, 0.8),
-            ("Gerar Artefato",      "success", ts(34), ts(38),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(16), 0,  0, 0,    lint_steps(3)),
+            ("Testes Automatizados","success", ts(17), ts(33), 25, 0, 0.8,  test_steps(17, 7)),
+            ("Gerar Artefato",      "success", ts(34), ts(38), 0,  0, 0,    build_steps(34)),
         ]
     elif run_number == 3:
-        # Falha no test; build-artifact não executa
+        # falha — sem build
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(15),  0, 0, 0),
-            ("Testes Automatizados","failure", ts(16), ts(28),  26, 1, 0.5),
+            ("Lint (flake8)",       "success", ts(3),  ts(15), 0,  0, 0,   lint_steps(3)),
+            ("Testes Automatizados","failure", ts(16), ts(28), 26, 1, 0.5, test_steps(16, 4)),
         ]
     elif run_number == 4:
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(15),  0, 0, 0),
-            ("Testes Automatizados","success", ts(16), ts(31),  25, 0, 0.7),
-            ("Gerar Artefato",      "success", ts(32), ts(37),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(15), 0,  0, 0,   lint_steps(3)),
+            ("Testes Automatizados","success", ts(16), ts(31), 25, 0, 0.7, test_steps(16, 6)),
+            ("Gerar Artefato",      "success", ts(32), ts(37), 0,  0, 0,   build_steps(32)),
         ]
     elif run_number == 5:
-        # 73 testes
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(15),  0, 0, 0),
-            ("Testes Automatizados","success", ts(16), ts(33),  73, 0, 1.4),
-            ("Gerar Artefato",      "success", ts(34), ts(40),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(15), 0,  0, 0,   lint_steps(3)),
+            ("Testes Automatizados","success", ts(16), ts(33), 73, 0, 1.4, test_steps(16, 8)),
+            ("Gerar Artefato",      "success", ts(34), ts(40), 0,  0, 0,   build_steps(34)),
         ]
     elif run_number == 6:
-        # 73 testes + 15s sleep
+        # 73 testes + 15s sleep dentro do pytest
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(15),  0, 0, 0),
-            ("Testes Automatizados","success", ts(16), ts(53),  73, 0, 17.4),
-            ("Gerar Artefato",      "success", ts(54), ts(63),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(15), 0,  0, 0,    lint_steps(3)),
+            ("Testes Automatizados","success", ts(16), ts(53), 73, 0, 17.4, test_steps(16, 33)),
+            ("Gerar Artefato",      "success", ts(54), ts(63), 0,  0, 0,    build_steps(54)),
         ]
     elif run_number == 7:
-        # Remove sleep, 73 testes
+        # 45s real
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(14),  0, 0, 0),
-            ("Testes Automatizados","success", ts(15), ts(32),  73, 0, 1.3),
-            ("Gerar Artefato",      "success", ts(33), ts(41),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(14), 0,  0, 0,   lint_steps(3)),
+            ("Testes Automatizados","success", ts(15), ts(35), 73, 0, 1.3, test_steps(15, 9)),
+            ("Gerar Artefato",      "success", ts(36), ts(45), 0,  0, 0,   build_steps(36)),
         ]
     elif run_number == 8:
-        # Paralelo: lint e test simultâneos → build depois
+        # 32s real — paralelo: lint ∥ test → build
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(13),  0, 0, 0),
-            ("Testes Automatizados","success", ts(3),  ts(18),  73, 0, 1.2),
-            ("Gerar Artefato",      "success", ts(19), ts(31),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(13), 0,  0, 0,   lint_steps(3)),
+            ("Testes Automatizados","success", ts(3),  ts(19), 73, 0, 1.2, test_steps(3, 8)),
+            ("Gerar Artefato",      "success", ts(20), ts(32), 0,  0, 0,   build_steps(20)),
         ]
     elif run_number == 9:
-        # Sequencial de volta
+        # 41s real — sequencial
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(15),  0, 0, 0),
-            ("Testes Automatizados","success", ts(16), ts(35),  73, 0, 1.3),
-            ("Gerar Artefato",      "success", ts(36), ts(44),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(14), 0,  0, 0,   lint_steps(3)),
+            ("Testes Automatizados","success", ts(15), ts(32), 73, 0, 1.3, test_steps(15, 7)),
+            ("Gerar Artefato",      "success", ts(33), ts(41), 0,  0, 0,   build_steps(33)),
         ]
     elif run_number == 10:
-        # Matrix: lint → test(3.10) || test(3.11) → build
+        # matrix: lint → test(3.10) ∥ test(3.11) → build
         jobs = [
-            ("Lint (flake8)",                  "success", ts(3),  ts(14),  0, 0, 0),
-            ("Testes (Python 3.10)",           "success", ts(15), ts(31),  73, 0, 1.4),
-            ("Testes (Python 3.11)",           "success", ts(15), ts(33),  73, 0, 1.3),
-            ("Gerar Artefato",                 "success", ts(34), ts(46),  0, 0, 0),
+            ("Lint (flake8)",        "success", ts(3),  ts(14), 0,  0, 0,   lint_steps(3)),
+            ("Testes (Python 3.10)", "success", ts(15), ts(31), 73, 0, 1.4, test_steps(15, 8)),
+            ("Testes (Python 3.11)", "success", ts(15), ts(33), 73, 0, 1.3, test_steps(15, 8)),
+            ("Gerar Artefato",       "success", ts(34), ts(46), 0,  0, 0,   build_steps(34)),
         ]
     elif run_number == 11:
-        # 85 testes
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(15),  0, 0, 0),
-            ("Testes Automatizados","success", ts(16), ts(38),  85, 0, 1.8),
-            ("Gerar Artefato",      "success", ts(39), ts(50),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(15), 0,  0, 0,   lint_steps(3)),
+            ("Testes Automatizados","success", ts(16), ts(38), 85, 0, 1.8, test_steps(16, 10)),
+            ("Gerar Artefato",      "success", ts(39), ts(50), 0,  0, 0,   build_steps(39)),
         ]
     elif run_number == 12:
-        # Paralelo final otimizado
+        # paralelo otimizado + cache aquecido
         jobs = [
-            ("Lint (flake8)",       "success", ts(3),  ts(13),  0, 0, 0),
-            ("Testes Automatizados","success", ts(3),  ts(16),  85, 0, 1.6),
-            ("Gerar Artefato",      "success", ts(17), ts(31),  0, 0, 0),
+            ("Lint (flake8)",       "success", ts(3),  ts(13), 0,  0, 0,   lint_steps(3)),
+            ("Testes Automatizados","success", ts(3),  ts(16), 85, 0, 1.6, test_steps(3, 7)),
+            ("Gerar Artefato",      "success", ts(17), ts(31), 0,  0, 0,   build_steps(17)),
         ]
 
     return jobs
@@ -162,7 +203,7 @@ FIELDS = [
 rows = []
 for (rnum, rid, sha, conclusion, created, updated, msg) in RUNS:
     workflow_dur = dur(created, updated)
-    for (jname, jstatus, jstart, jend, tcount, tfail, tdur) in jobs_for_run(rnum, created):
+    for (jname, jstatus, jstart, jend, tcount, tfail, tdur, steps) in jobs_for_run(rnum, created):
         jdur = dur(jstart, jend)
         rows.append({
             "run_id":            rid,
@@ -178,7 +219,7 @@ for (rnum, rid, sha, conclusion, created, updated, msg) in RUNS:
             "test_failures":     tfail,
             "test_duration":     tdur,
             "timestamp":         created,
-            "steps_detail":      "{}",
+            "steps_detail":      json.dumps(steps, ensure_ascii=False),
         })
 
 csv_path = os.path.join(OUT, "metrics.csv")

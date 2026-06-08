@@ -3,6 +3,11 @@ name: CI Pipeline - Calculadora
 on:
   push:
     branches: [ main ]
+    # Ignora commits automáticos do workflow de coleta de métricas
+    paths-ignore:
+      - 'Entregaveis/metrics.csv'
+      - 'Entregaveis/metrics.json'
+      - 'Entregaveis/graficos/**'
   pull_request:
     branches: [ main ]
 

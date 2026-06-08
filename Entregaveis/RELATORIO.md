@@ -2,8 +2,9 @@
 
 **Disciplina:** Programação
 **Projeto:** Calculadora Python com Pipeline GitHub Actions  
-**Repositório:** https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD  
-**Pipeline YAML:** https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/blob/main/.github/workflows/ci.yml  
+**Repositório:** https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD  
+**Execuções (Actions):** https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions  
+**Pipeline YAML:** https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/blob/main/.github/workflows/ci.yml  
 **Data das execuções:** 2026-06-07  
 **Total de execuções:** 12 runs (GitHub Actions)
 
@@ -30,6 +31,13 @@ push → main
 | `Testes Automatizados` | pytest 8.3.4 + pytest-cov + pytest-json-report | Execução dos testes e coleta de cobertura |
 | `Gerar Artefato` | bash + upload-artifact | Empacotamento e publicação do binário |
 
+### Workflows configurados
+
+| Workflow | Arquivo | Gatilho | Função |
+|---|---|---|---|
+| CI Pipeline - Calculadora | `ci.yml` | push/PR em main | Lint, testes, artefato |
+| Coleta Automática de Métricas | `collect-metrics.yml` | após cada run do CI | Coleta API → CSV/JSON → gráficos → commit |
+
 ### Tecnologias utilizadas
 
 - Python 3.11 (e 3.10 via matrix no Run 10)
@@ -45,20 +53,20 @@ push → main
 
 | Run | Run ID | SHA (curto) | Status | Duração | Variação Introduzida |
 |-----|--------|-------------|--------|---------|---------------------|
-| 1 | [27112044624](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112044624) | `e1a3df26` | ✅ Sucesso | 42s | Setup inicial — pipeline sequencial, 25 testes |
-| 2 | [27112149648](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112149648) | `ea54e934` | ✅ Sucesso | 38s | **Cache pip habilitado** (`actions/setup-python cache: "pip"`) |
-| 3 | [27112269110](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112269110) | `8f9661d7` | ❌ Falha | 28s | **Teste falho intencional** (`assert calc.add(2,3) == 99`) |
-| 4 | [27112356025](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112356025) | `55bca9ac` | ✅ Sucesso | 37s | **Correção do teste** — pipeline volta ao verde |
-| 5 | [27112391499](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112391499) | `3b0d022d` | ✅ Sucesso | 40s | **Escala de testes**: 25 → 73 testes via `@pytest.mark.parametrize` |
-| 6 | [27112473461](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112473461) | `8249ae61` | ✅ Sucesso | 63s | **Testes lentos**: `time.sleep(8)` + `time.sleep(7)` introduzidos |
-| 7 | *(est. 27112524803)* | `f0fe387b` | ✅ Sucesso | 41s | **Remoção dos sleeps** — volta à baseline após gargalo confirmado |
-| 8 | *(est. 27112577156)* | `e118b08d` | ✅ Sucesso | 31s | **Jobs paralelos**: `lint` e `test` sem `needs:` entre si |
-| 9 | *(est. 27112629509)* | `fb8be2fc` | ✅ Sucesso | 44s | **Jobs sequenciais** — revertido para comparação de desempenho |
-| 10 | [27112682110](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112682110) | `d1cebf2e` | ✅ Sucesso | 46s | **Matrix strategy**: Python 3.10 e 3.11 em paralelo |
-| 11 | [27112791306](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112791306) | `88d3de7a` | ✅ Sucesso | 50s | **Novas operações** (power, sqrt, modulo) — 73 → 85 testes |
-| 12 | [27112842731](https://github.com/vsavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112842731) | `0bbcf745` | ✅ Sucesso | 31s | **Pipeline otimizado final**: cache + paralelismo + 85 testes |
+| 1 | [27112044624](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112044624) | `e1a3df26` | ✅ Sucesso | 42s | Setup inicial — pipeline sequencial, 25 testes |
+| 2 | [27112149648](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112149648) | `ea54e934` | ✅ Sucesso | 38s | **Cache pip habilitado** (`actions/setup-python cache: "pip"`) |
+| 3 | [27112269110](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112269110) | `8f9661d7` | ❌ Falha | 28s | **Teste falho intencional** (`assert calc.add(2,3) == 99`) |
+| 4 | [27112356025](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112356025) | `55bca9ac` | ✅ Sucesso | 37s | **Correção do teste** — pipeline volta ao verde |
+| 5 | [27112391499](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112391499) | `3b0d022d` | ✅ Sucesso | 40s | **Escala de testes**: 25 → 73 testes via `@pytest.mark.parametrize` |
+| 6 | [27112473461](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112473461) | `8249ae61` | ✅ Sucesso | 63s | **Testes lentos**: `time.sleep(8)` + `time.sleep(7)` introduzidos |
+| 7 | [27112580030](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112580030) | `f0fe387b` | ✅ Sucesso | 45s | **Remoção dos sleeps** — volta à baseline após gargalo confirmado |
+| 8 | [27112613229](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112613229) | `e118b08d` | ✅ Sucesso | 32s | **Jobs paralelos**: `lint` e `test` sem `needs:` entre si |
+| 9 | [27112636681](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112636681) | `fb8be2fc` | ✅ Sucesso | 41s | **Jobs sequenciais** — revertido para comparação de desempenho |
+| 10 | [27112682110](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112682110) | `d1cebf2e` | ✅ Sucesso | 46s | **Matrix strategy**: Python 3.10 e 3.11 em paralelo |
+| 11 | [27112791306](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112791306) | `88d3de7a` | ✅ Sucesso | 50s | **Novas operações** (power, sqrt, modulo) — 73 → 85 testes |
+| 12 | [27112842731](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112842731) | `0bbcf745` | ✅ Sucesso | 31s | **Pipeline otimizado final**: cache + paralelismo + 85 testes |
 
-> **Nota sobre Runs 7–9:** A página 2 da API pública do GitHub retornou lista vazia por limitação de cache do servidor (confirmado: 28 chamadas restantes no rate limit, mesma resposta em múltiplas tentativas). Os IDs foram estimados por interpolação linear entre os IDs reais dos Runs 6 e 10. Os timestamps derivam do `git log` com precisão de ±1 segundo.
+> **Todos os 12 Run IDs são reais**, coletados da API pública do GitHub (`GET /repos/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs`). Os IDs dos Runs 7–9 não estavam disponíveis na paginação inicial (página 2 retornava lista vazia — problema de cache do servidor GitHub) e foram obtidos posteriormente via consulta direta à página de execuções.
 
 ---
 
@@ -118,12 +126,12 @@ O ganho absoluto de 4s pode parecer modesto, mas em pipelines com múltiplos job
 
 Comparando Run 9 (sequencial, 73 testes) e Run 8 (paralelo, 73 testes):
 
-| Configuração | Duração |
-|---|---|
-| Sequencial (lint → test → build) | 44s |
-| Paralelo (lint ∥ test → build) | 31s |
+| Configuração | Duração | Run ID |
+|---|---|---|
+| Sequencial (lint → test → build) | 41s | [#9 / 27112636681](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112636681) |
+| Paralelo (lint ∥ test → build) | 32s | [#8 / 27112613229](https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs/27112613229) |
 
-**Redução de 30%** na duração total. O paralelismo elimina a espera do job `test` pelo término do `lint`, já que são independentes entre si.
+**Redução de 22%** na duração total. O paralelismo elimina a espera do job `test` pelo término do `lint`, já que são independentes entre si.
 
 ### 4.4 Qual o impacto do volume de testes?
 
@@ -164,6 +172,9 @@ O pipeline está muito abaixo dos benchmarks de mercado. Um desenvolvedor pode f
 
 Com base nos dados coletados, as melhorias mais impactantes seriam:
 
+**Melhorias já implementadas neste experimento:**
+- **Coleta automática de métricas** via workflow `collect-metrics.yml` — após cada run do CI, um segundo workflow dispara automaticamente via `workflow_run`, consulta a API do GitHub com o `GITHUB_TOKEN` nativo, atualiza `metrics.csv`, `metrics.json` e os gráficos, e commita o resultado de volta ao repositório sem qualquer intervenção manual. O commit usa `[skip ci]` e `paths-ignore` no CI para evitar loop infinito.
+
 **Melhorias de desempenho:**
 - Separar testes por módulo em jobs paralelos quando a suíte ultrapassar ~500 testes (o job de teste é o gargalo)
 - Adicionar cache da camada de SO além do pip (ex.: caching do `apt-get install` se dependências nativas forem adicionadas)
@@ -198,10 +209,10 @@ Os dados coletados permitem decisões baseadas em evidências em vez de intuiç�
 | Hipótese | Verificada? | Observação |
 |---|---|---|
 | Cache reduz tempo de instalação de dependências | ✅ Confirmada | −9,5% no tempo total (Run 1→2) |
-| Paralelismo entre jobs reduz duração total | ✅ Confirmada | −30% (Run 9→8) |
+| Paralelismo entre jobs reduz duração total | ✅ Confirmada | −22% (Run 9→8: 41s→32s) |
 | Mais testes = pipeline muito mais lento | ⚠️ Parcialmente refutada | +240% em testes = +27% no job de teste, não proporcional |
 | Testes com sleep impactam duração | ✅ Confirmada | +50% na duração total (Run 5→6: 40s→63s) |
-| Matrix strategy aumenta tempo do pipeline | ✅ Refutada | Run 10 (matrix) ≈ Run 9 (sequencial) em tempo total |
+| Matrix strategy aumenta tempo do pipeline | ✅ Refutada | Run 10 (matrix, 46s) ≈ Run 9 (sequencial, 41s) — diferença de apenas 5s |
 | Falha no test impede build-artifact | ✅ Confirmada | Run 3: build-artifact foi skipped automaticamente |
 
 ### 4.10 Análise de Resultados Inesperados
@@ -212,7 +223,7 @@ Dois resultados se destacaram por contradizer as expectativas iniciais:
 
 Hipótese inicial: adicionar um segundo ambiente Python via `matrix` dobraria o tempo do pipeline, pois haveria o dobro de jobs de teste.
 
-Resultado observado: Run 10 (matrix: 3.10 + 3.11) durou **46s**, praticamente igual ao Run 9 sequencial (**44s**) com um único ambiente.
+Resultado observado: Run 10 (matrix: 3.10 + 3.11) durou **46s**, praticamente igual ao Run 9 sequencial (**41s**) com um único ambiente.
 
 Explicação: Os dois jobs de teste rodam em paralelo. O tempo total é determinado pelo mais lento dos dois (33s para Python 3.11), não pela soma. Isso significa que a matrix strategy entrega cobertura de compatibilidade com custo quase zero — um padrão que deveria ser adotado por padrão em projetos com suporte a múltiplas versões do Python.
 
@@ -258,6 +269,16 @@ A configuração final (Run 12) combina cache, paralelismo lint∥test e 85 test
 ---
 
 ## 7. Evidências de Execução
+
+### Print das execuções reais no GitHub Actions
+
+A imagem abaixo foi gerada a partir dos dados reais retornados pela API pública do GitHub (`GET /repos/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions/runs`), reproduzindo fielmente a listagem da aba Actions com todos os 14 runs (12 do experimento + 2 commits de entrega). Os Run IDs são clicáveis na tabela da seção 2.
+
+![Evidência — GitHub Actions Runs](graficos/evidencia_github_actions_runs.png)
+
+> **Link direto:** https://github.com/ViniciusSavian/Coleta_An-lise_Metricas_Pipeline_CI_CD/actions
+
+---
 
 ### Log do git com todos os 12 commits
 
