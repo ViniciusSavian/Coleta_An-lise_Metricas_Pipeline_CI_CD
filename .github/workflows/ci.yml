@@ -32,18 +32,21 @@ jobs:
 
   # ─── JOB 2: Testes ─────────────────────────────────────────────────────────
   test:
-    name: "Testes Automatizados"
+    name: "Testes (Python ${{ matrix.python-version }})"
     runs-on: ubuntu-latest
     needs: lint
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
 
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar Python 3.11
+      - name: Configurar Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
 
       - name: Instalar dependências
